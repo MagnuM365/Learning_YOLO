@@ -16,14 +16,14 @@ classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "trai
 
 #cap = cv.VideoCapture(0) #for webcam
 
-cap = cv.VideoCapture("Learn_YOLO\Videos\\3.mp4") #for videos
+cap = cv.VideoCapture("YOLO\Videos\\carcount1.mp4") #for videos
 
 model = YOLO('yolov8n.pt')
 
 while True:
     ret, img = cap.read()
-    frame = cv.resize(img, (1380, 720))
 
+    frame =cv.resize(img, (1280, 720)) 
     result = model(frame, stream=True)
     for r in result:
         boxes = r.boxes
@@ -32,18 +32,23 @@ while True:
             x1, y1, x2, y2 = box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
             # print(x1, y1, x2, y2)
-            cv.rectangle(frame, (x1, y1), (x2,y2), (0, 255, 0), 2)
-
+            
             #confidence
             conf = math.ceil((box.conf[0] * 100)) / 100
             # print(conf)
 
             #classlabel
             cls = int(box.cls[0])
-            cv.putText(frame, f'{classNames[cls]}: {conf}', (max(0, x1), max(40, y1)), cv.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2, cv.LINE_4)
+            classLabel = classNames[cls]
+
+            if classLabel == 'car' or classLabel=='truck' or classLabel=='motorbike' or classLabel=='bus' and conf > 0.3:
+                cv.rectangle(frame, (x1, y1), (x2,y2), (0, 255, 0), 2)
+                cv.putText(frame, f'{classNames[cls]}: {conf}', (max(0, x1), max(40, y1)), cv.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2, cv.LINE_4)
 
     cv.imshow("webcam", frame)
-    if cv.waitKey(1) & 0xFF == ord('q'):
+    # cv.imshow("webcam", frameRegion)
+    key = cv.waitKey(0) & 0xFF
+    if key == ord('q'):  # Press 'q' to quit
         break
 
 cap.release()
